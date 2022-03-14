@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
-for i in (1..20) do
-  if (i % 3 == 0) && (i % 5 == 0) then
+(1..20).each do |n|
+  if n % 15 == 0
     puts "FizzBuzz"
-  elsif i % 3 == 0 then
+  elsif n % 3 == 0
     puts "Fizz"
-  elsif i % 5 == 0 then
+  elsif n % 5 == 0
     puts "Buzz"
   else
-    puts i
+    puts n
   end
 end
