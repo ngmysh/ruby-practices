@@ -20,7 +20,7 @@ def show_days(year, month)
     print date.day.to_s.rjust(2)
     print "\n" if date.saturday?
   end
-  print "\n"
+  puts
 end
 
 def show_calendar(year, month)
