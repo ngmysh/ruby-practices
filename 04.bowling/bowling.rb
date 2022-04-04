@@ -6,11 +6,12 @@ scores = input.split(',')
 
 shots = []
 scores.each do |score|
-  shots << if score == 'X'
-             10
-           else
-             score.to_i
-           end
+  shots <<
+    if score == 'X'
+      10
+    else
+      score.to_i
+    end
 end
 
 frames = []
@@ -29,17 +30,18 @@ end
 point = 0
 frames.each_with_index do |frame, index|
   point += frame.sum
-  bonus = if index != 9 # 最終フレームはボーナスなし
-            if frame[0] == 10 # ストライク
-              if frames[index + 1][1].nil? # 次のフレームの2投目が存在しない
-                frames[index + 1][0] + frames[index + 2][0]
-              else
-                frames[index + 1][0] + frames[index + 1][1]
-              end
-            elsif frame.sum == 10 # スペア
-              frames[index + 1][0]
-            end
-          end
+  bonus =
+    if index != 9 # 最終フレームはボーナスなし
+      if frame[0] == 10 # ストライク
+        if frames[index + 1][1].nil? # 次のフレームの2投目が存在しない
+          frames[index + 1][0] + frames[index + 2][0]
+        else
+          frames[index + 1][0] + frames[index + 1][1]
+        end
+      elsif frame.sum == 10 # スペア
+        frames[index + 1][0]
+      end
+    end
   point += bonus unless bonus.nil?
 end
 
