@@ -1,30 +1,37 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+def last_frame?(frames)
+  frames.size == 9
+end
+
+def last_throw?(shots, index)
+  index == shots.size - 1
+end
+
+def strike?(shot)
+  shot == 10
+end
+
+def second_throw_in_frame?(frame)
+  frame.size == 2
+end
+
 input = ARGV[0]
 scores = input.split(',')
 
-shots = []
-scores.each do |score|
-  shots <<
-    if score == 'X'
-      10
-    else
-      score.to_i
-    end
-end
+shots = scores.map { |score| score == 'X' ? 10 : score.to_i }
 
 frames = []
 tmp_frame = []
 shots.each_with_index do |shot, index|
   tmp_frame << shot
-  # トータルのフレームに現在のフレームを追加する条件は次の通り
-  # ・(最終フレームではない) && (ストライク || フレームの2投目)
-  # ・最後の1投
-  next unless ((frames.size != 9) && (shot == 10 || tmp_frame.size == 2)) || (index == shots.size - 1)
-
-  frames << tmp_frame
-  tmp_frame = []
+  if last_frame?(frames)
+    frames << tmp_frame if last_throw?(shots, index)
+  elsif strike?(shot) || second_throw_in_frame?(tmp_frame)
+    frames << tmp_frame
+    tmp_frame = []
+  end
 end
 
 point = 0
@@ -33,11 +40,8 @@ frames.each_with_index do |frame, index|
   bonus =
     if index != 9 # 最終フレームはボーナスなし
       if frame[0] == 10 # ストライク
-        if frames[index + 1][1].nil? # 次のフレームの2投目が存在しない
-          frames[index + 1][0] + frames[index + 2][0]
-        else
-          frames[index + 1][0] + frames[index + 1][1]
-        end
+        # 次のフレームの2投目が存在しない場合、次の次のフレームの1投目を足す
+        frames[index + 1][0] + (frames[index + 1][1] || frames[index + 2][0])
       elsif frame.sum == 10 # スペア
         frames[index + 1][0]
       end
