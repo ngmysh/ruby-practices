@@ -18,7 +18,7 @@ def show_days(year, month)
   (first..last).each do |date|
     print ' ' unless date.sunday?
     print date.day.to_s.rjust(2)
-    print "\n" if date.saturday?
+    puts if date.saturday?
   end
   puts
 end
