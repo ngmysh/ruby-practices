@@ -3,50 +3,53 @@
 
 COLUMN = 3
 
-def pad_divide(array, number, fill_with)
-  division = array.size / number
-  modulo = array.size % number
-  length = division + (modulo.positive? ? 1 : 0)
+def format_entries(entries, column)
+  division = entries.length / column
+  modulo = entries.length % column
 
-  array.dup.fill(fill_with, array.length...(length * number)).each_slice(length).to_a
+  column_length = division + (modulo.positive? ? 1 : 0)
+
+  # 空文字列でパディング、列の長さで分割、行と列を反転
+  entries.sort.dup.fill('', entries.length...(column_length * column)).each_slice(column_length).to_a.transpose
 end
 
-def print_ls_style(entries)
-  return if entries.empty?
-
-  # entriesを各列の配列に分割する。
-  # 後でtransposeでエラーにならないように、entriesが3で割り切れないときは最後の配列は空文字列パディングする。
-  divided_entries = pad_divide(entries.sort, COLUMN, '')
-
-  # 列の表示をそろえるために、各列の中で最大の文字列の長さを記録しておく。
-  max_length_each_column = divided_entries.map { |column| column.max_by(&:length).size }
-
-  divided_entries.transpose.each do |row|
+def print_aligned_entries(entries, max_length_each_column)
+  entries.each do |row|
     row.each_with_index do |entry, column_index|
-      print '  ' if column_index != 0
-      print entry.to_s
-      print ' ' * (max_length_each_column[column_index] - entry.size)
+      unless entry.empty?
+        print '  ' if column_index != 0
+        print entry.to_s
+        print ' ' * (max_length_each_column[column_index] - entry.size)
+      end
       puts if column_index == row.size - 1
     end
   end
 end
 
+def show_entries(entries)
+  return if entries.empty?
+
+  formatted_entries = format_entries(entries, COLUMN)
+  max_length_each_column = formatted_entries.transpose.map { |column| column.max_by(&:length).size }
+
+  print_aligned_entries(formatted_entries, max_length_each_column)
+end
+
+def warn_access_error(entry)
+  warn "#{__FILE__}: cannot access '#{entry}': No such file or directory"
+end
+
 if ARGV.empty?
   entries = Dir.glob('*')
-  print_ls_style(entries)
+  show_entries(entries)
 else
-  # 引数でファイルやディレクトリが指定された場合、処理される順番は次のようになっていた。（ls (GNU coreutils) 8.32）
-  # １．存在しないファイルが渡されるとファイルが見つからない旨のメッセージを標準エラー出力に出力する。
-  # ２．渡されたファイル名を全て出力する。
-  # 　　引数が"file1 dir1 file2"のようになってても、先にすべてのファイルが表示される。
-  # ３．渡されたディレクトリのの中にあるディレクトリエントリを表示する。
-  # 　　複数のディレクトリが渡されたときはディレクトリ名の末尾に":"を付けて表示する。
   files = []
   directories = []
 
+  # アクセスエラー、ファイル、ディレクトリの順で出力
   ARGV.each do |command_line_argument|
     if !File.exist?(command_line_argument)
-      warn "#{__FILE__}: cannot access '#{command_line_argument}': No such file or directory"
+      warn_access_error(command_line_argument)
     elsif File.directory?(command_line_argument)
       directories << command_line_argument
     else
@@ -54,12 +57,12 @@ else
     end
   end
 
-  print_ls_style(files)
+  show_entries(files)
 
   directories.sort.each_with_index do |directory, index|
     puts if !files.empty? || index != 0
     puts "#{directory}:" if directories.size > 1
     entries = Dir.glob('*', base: directory)
-    print_ls_style(entries)
+    show_entries(entries)
   end
 end
