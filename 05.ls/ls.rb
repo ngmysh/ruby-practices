@@ -13,8 +13,11 @@ def format_entries(entries, column)
   entries.sort.dup.fill('', entries.length...(column_length * column)).each_slice(column_length).to_a.transpose
 end
 
-def print_aligned_entries(entries, max_length_each_column)
-  entries.each do |row|
+def print_entries(entries, number_of_column)
+  formatted_entries = format_entries(entries, number_of_column)
+  max_length_each_column = formatted_entries.transpose.map { |column| column.max_by(&:length).size }
+
+  formatted_entries.each do |row|
     row.each_with_index do |entry, column_index|
       unless entry.empty?
         print '  ' if column_index != 0
@@ -29,10 +32,7 @@ end
 def show_entries(entries)
   return if entries.empty?
 
-  formatted_entries = format_entries(entries, COLUMN)
-  max_length_each_column = formatted_entries.transpose.map { |column| column.max_by(&:length).size }
-
-  print_aligned_entries(formatted_entries, max_length_each_column)
+  print_entries(entries, COLUMN)
 end
 
 def warn_access_error(entry)
@@ -61,7 +61,7 @@ else
 
   directories.sort.each_with_index do |directory, index|
     puts if !files.empty? || index != 0
-    puts "#{directory}:" if directories.size > 1
+    puts "#{directory}:" if !files.empty? || directories.size > 1
     entries = Dir.glob('*', base: directory)
     show_entries(entries)
   end
