@@ -13,9 +13,15 @@ def format_entries(entries, column)
   entries.sort.dup.fill('', entries.length...(column_length * column)).each_slice(column_length).to_a.transpose
 end
 
-def print_entries(entries, number_of_column)
-  formatted_entries = format_entries(entries, number_of_column)
-  max_length_each_column = formatted_entries.transpose.map { |column| column.max_by(&:length).size }
+def calc_max_length_each_column(two_dimensional_array)
+  two_dimensional_array.transpose.map { |column| column.max_by(&:length).size }
+end
+
+def show_entries(entries, number_of_columns)
+  return if entries.empty?
+
+  formatted_entries = format_entries(entries, number_of_columns)
+  max_length_each_column = calc_max_length_each_column(formatted_entries)
 
   formatted_entries.each do |row|
     row.each_with_index do |entry, column_index|
@@ -29,19 +35,13 @@ def print_entries(entries, number_of_column)
   end
 end
 
-def show_entries(entries)
-  return if entries.empty?
-
-  print_entries(entries, COLUMN)
-end
-
 def warn_access_error(entry)
   warn "#{__FILE__}: cannot access '#{entry}': No such file or directory"
 end
 
 if ARGV.empty?
   entries = Dir.glob('*')
-  show_entries(entries)
+  show_entries(entries, COLUMN)
 else
   files = []
   directories = []
@@ -57,12 +57,12 @@ else
     end
   end
 
-  show_entries(files)
+  show_entries(files, COLUMN)
 
   directories.sort.each_with_index do |directory, index|
     puts if !files.empty? || index != 0
     puts "#{directory}:" if !files.empty? || directories.size > 1
     entries = Dir.glob('*', base: directory)
-    show_entries(entries)
+    show_entries(entries, COLUMN)
   end
 end
